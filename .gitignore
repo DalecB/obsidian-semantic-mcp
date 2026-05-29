@@ -1,0 +1,15 @@
+node_modules/
+npm-debug.log*
+*.tgz
+
+# Local runtime state
+data/
+logs/
+cache/
+*.sqlite
+*.sqlite-*
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

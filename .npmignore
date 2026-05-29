@@ -1,0 +1,11 @@
+node_modules/
+data/
+logs/
+cache/
+*.sqlite
+*.sqlite-*
+.DS_Store
+.git/
+.github/
+coverage/
+test/

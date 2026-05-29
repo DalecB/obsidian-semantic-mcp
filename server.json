@@ -1,0 +1,65 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.dalecb/obsidian-semantic-mcp",
+  "title": "Obsidian Semantic Search",
+  "description": "Read-only semantic search MCP server for Obsidian vaults using local Ollama embeddings.",
+  "repository": {
+    "url": "https://github.com/DalecB/obsidian-semantic-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@dalecb/obsidian-semantic-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "OBSIDIAN_VAULT_ROOT",
+          "description": "Absolute path to the local Obsidian vault.",
+          "format": "string",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "OBSIDIAN_SEMANTIC_MCP_HOME",
+          "description": "Directory for the external SQLite index, logs, and cache.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "OBSIDIAN_EMBED_MODEL",
+          "description": "Ollama embedding model name. Defaults to bge-m3.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "OLLAMA_BASE_URL",
+          "description": "Ollama API base URL. Defaults to http://localhost:11434.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "OBSIDIAN_SEMANTIC_STARTUP_INDEX",
+          "description": "Set to true to run incremental indexing when the server starts.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "OBSIDIAN_SEMANTIC_ALLOW_SENSITIVE",
+          "description": "Set to true to allow include_sensitive tool calls.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}
