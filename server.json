@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.dalecb/obsidian-semantic-mcp",
+  "name": "io.github.DalecB/obsidian-semantic-mcp",
   "title": "Obsidian Semantic Search",
   "description": "Read-only semantic search MCP server for Obsidian vaults using local Ollama embeddings.",
   "repository": {
     "url": "https://github.com/DalecB/obsidian-semantic-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@dalecb/obsidian-semantic-mcp",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "transport": {
         "type": "stdio"
       },

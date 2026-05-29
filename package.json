@@ -1,6 +1,6 @@
 {
   "name": "@dalecb/obsidian-semantic-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read-only semantic search MCP server for Obsidian vaults using local Ollama embeddings.",
   "type": "module",
   "license": "MIT",
@@ -24,8 +24,8 @@
     "claude"
   ],
   "bin": {
-    "obsidian-semantic-mcp": "./bin/obsidian-semantic-mcp.mjs",
-    "obsidian-semantic-mcp-setup": "./bin/obsidian-semantic-mcp-setup.mjs"
+    "obsidian-semantic-mcp": "bin/obsidian-semantic-mcp.mjs",
+    "obsidian-semantic-mcp-setup": "bin/obsidian-semantic-mcp-setup.mjs"
   },
   "files": [
     "bin/",
@@ -50,5 +50,5 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "mcpName": "io.github.dalecb/obsidian-semantic-mcp"
+  "mcpName": "io.github.DalecB/obsidian-semantic-mcp"
 }
