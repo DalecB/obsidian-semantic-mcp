@@ -45,6 +45,22 @@ test('indexes fixture vault without touching source files and searches file-leve
   assert.throws(() => readNote({ vaultRoot: vault, path: '08_PersonalInfo/API KEY.md' }), /denied/);
 });
 
+test('user excludePaths keep folders out of the index', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ossm-'));
+  const vault = path.join(dir, 'vault');
+  const app = path.join(dir, 'app');
+  fs.mkdirSync(path.join(vault, '03_Journal'), { recursive: true });
+  fs.mkdirSync(path.join(vault, '02_Projects'), { recursive: true });
+  fs.writeFileSync(path.join(vault, '03_Journal', 'private.md'), '# Journal\n\nRedis Lua private thoughts');
+  fs.writeFileSync(path.join(vault, '02_Projects', 'public.md'), '# Project\n\nRedis Lua public note');
+
+  const db = openDatabase(path.join(app, 'semantic.sqlite'));
+  await indexVault({ db, vaultRoot: vault, embeddingClient: new FakeEmbeddingClient(), excludePaths: ['03_Journal/'] });
+  const indexed = db.prepare('SELECT path FROM notes ORDER BY path').all().map((r) => r.path);
+  assert.deepEqual(indexed, ['02_Projects/public.md']);
+  assert.throws(() => readNote({ vaultRoot: vault, path: '03_Journal/private.md', excludePaths: ['03_Journal/'] }), /denied/);
+});
+
 test('incremental indexing removes stale rows for deleted files', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ossm-'));
   const vault = path.join(dir, 'vault');

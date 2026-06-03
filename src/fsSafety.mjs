@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_DENY_PREFIXES } from './config.mjs';
+import { DEFAULT_DENY_PREFIXES, DEFAULT_SENSITIVE_PREFIXES } from './config.mjs';
 
 export function normalizeRelPath(input) {
   if (typeof input !== 'string' || input.length === 0) {
@@ -23,15 +23,18 @@ export function normalizeRelPath(input) {
   return clean;
 }
 
-export function isDeniedRelativePath(relPath, { includeSensitive = false } = {}) {
+export function isDeniedRelativePath(
+  relPath,
+  { includeSensitive = false, excludePaths = [], sensitivePaths = DEFAULT_SENSITIVE_PREFIXES } = {},
+) {
   const rel = relPath.replaceAll('\\', '/');
   const segments = rel.split('/').filter(Boolean);
   if (segments.some((segment) => segment.startsWith('.'))) return true;
   if (segments.some((segment) => ['node_modules', 'cache', 'logs'].includes(segment))) return true;
-  if (!includeSensitive && rel.startsWith('08_PersonalInfo/')) return true;
-  return DEFAULT_DENY_PREFIXES
-    .filter((prefix) => !(includeSensitive && prefix === '08_PersonalInfo/'))
-    .some((prefix) => rel.startsWith(prefix));
+  if (excludePaths.some((prefix) => rel.startsWith(prefix))) return true;
+  if (DEFAULT_DENY_PREFIXES.some((prefix) => rel.startsWith(prefix))) return true;
+  if (!includeSensitive && sensitivePaths.some((prefix) => rel.startsWith(prefix))) return true;
+  return false;
 }
 
 export function assertMarkdownPath(relPath) {

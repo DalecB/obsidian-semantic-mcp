@@ -7,12 +7,12 @@
     "url": "https://github.com/DalecB/obsidian-semantic-mcp",
     "source": "github"
   },
-  "version": "0.1.2",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@dalecb/obsidian-semantic-mcp",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "transport": {
         "type": "stdio"
       },
@@ -55,6 +55,20 @@
         {
           "name": "OBSIDIAN_SEMANTIC_ALLOW_SENSITIVE",
           "description": "Set to true to allow include_sensitive tool calls.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "OBSIDIAN_SEMANTIC_EXCLUDE",
+          "description": "Comma- or newline-separated folders to always exclude from indexing, search, and read.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "OBSIDIAN_SEMANTIC_SENSITIVE_PATHS",
+          "description": "Comma- or newline-separated folders treated as sensitive (blocked unless unlocked). Defaults to 08_PersonalInfo/.",
           "format": "string",
           "isRequired": false,
           "isSecret": false

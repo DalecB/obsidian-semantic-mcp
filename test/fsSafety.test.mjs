@@ -22,6 +22,23 @@ test('denylist blocks hidden and sensitive folders', () => {
   assert.equal(isDeniedRelativePath('08_PersonalInfo/API KEY.md', { includeSensitive: true }), false);
 });
 
+test('user-defined excludePaths are always denied', () => {
+  const opts = { excludePaths: ['03_Journal/', 'Private/'] };
+  assert.equal(isDeniedRelativePath('03_Journal/2026-06.md', opts), true);
+  assert.equal(isDeniedRelativePath('Private/budget.md', opts), true);
+  assert.equal(isDeniedRelativePath('02_Projects/note.md', opts), false);
+  // excludePaths cannot be unlocked with include_sensitive
+  assert.equal(isDeniedRelativePath('03_Journal/2026-06.md', { ...opts, includeSensitive: true }), true);
+});
+
+test('custom sensitivePaths replace the default and stay unlockable', () => {
+  const opts = { sensitivePaths: ['Secrets/'] };
+  assert.equal(isDeniedRelativePath('Secrets/key.md', opts), true);
+  assert.equal(isDeniedRelativePath('Secrets/key.md', { ...opts, includeSensitive: true }), false);
+  // the built-in default no longer applies once overridden
+  assert.equal(isDeniedRelativePath('08_PersonalInfo/note.md', opts), false);
+});
+
 test('path guard blocks symlink escape', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ossm-'));
   const vault = path.join(dir, 'vault');

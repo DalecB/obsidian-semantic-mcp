@@ -118,7 +118,7 @@ async function handleRequest(request, context) {
       return {
         protocolVersion: request.params?.protocolVersion || '2024-11-05',
         capabilities: { tools: {} },
-        serverInfo: { name: 'obsidian-semantic-mcp', version: '0.1.0' },
+        serverInfo: { name: 'obsidian-semantic-mcp', version: '0.2.0' },
       };
     case 'tools/list':
       return { tools: TOOLS };
@@ -146,6 +146,8 @@ async function callTool(params, { config, db, embeddingClient, startupIndexPromi
       dryRun: Boolean(args.dry_run),
       paths: args.paths || null,
       includeSensitive: resolveSensitiveAccess(args, config),
+      excludePaths: config.excludePaths,
+      sensitivePaths: config.sensitivePaths,
     });
     return textResult(result);
   }
@@ -164,6 +166,8 @@ async function callTool(params, { config, db, embeddingClient, startupIndexPromi
       vaultRoot: config.vaultRoot,
       ...args,
       include_sensitive: resolveSensitiveAccess(args, config),
+      excludePaths: config.excludePaths,
+      sensitivePaths: config.sensitivePaths,
     });
     return textResult(result);
   }

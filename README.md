@@ -32,7 +32,36 @@ local Obsidian vault -> read-only scanner -> local SQLite index -> MCP search/re
 
 No note writes. No cloud embeddings. No Obsidian plugin runtime. No sync service.
 
-> Status: `0.1.1` early preview. The server is usable today, but ranking behavior and tool schemas may change before `1.0`.
+```mermaid
+---
+config:
+  look: handDrawn
+  theme: base
+  themeVariables:
+    fontFamily: "Comic Sans MS, Comic Sans, Chalkboard, cursive"
+    primaryColor: "#ffe8a3"
+    primaryBorderColor: "#e08a00"
+    primaryTextColor: "#3a2f00"
+    lineColor: "#e08a00"
+    secondaryColor: "#cdeffd"
+    tertiaryColor: "#ffd6e0"
+---
+flowchart LR
+    subgraph Local["Your machine — nothing leaves it"]
+        V[("Obsidian vault<br>Markdown")]
+        S["Read-only scanner<br>deny-list + symlink guard"]
+        C["Chunker<br>headings + summary"]
+        O["Ollama bge-m3<br>local embeddings"]
+        DB[("SQLite index<br>vectors + FTS5")]
+        V -->|scan| S --> C --> O --> DB
+    end
+    Agent["MCP client<br>Claude · Codex · Cursor"]
+    Agent -->|search_notes| DB
+    Agent -->|read_note| V
+    DB -->|"file-level matches<br>heading · lines · snippet"| Agent
+```
+
+> Status: `0.2.0` early preview. The server is usable today, but ranking behavior and tool schemas may change before `1.0`.
 
 ## What You Get
 
@@ -130,14 +159,21 @@ Claude Desktop, Cursor, and other JSON-style MCP clients can use:
 
 ## Why This Exists
 
-This is not trying to be the most powerful Obsidian automation server. It is trying to be the safest useful retrieval layer for agents.
+This isn't aiming to be the most powerful Obsidian automation server. It aims to be the safest retrieval tool you can hand an agent.
 
-| Compared with | Better when you need | Not better when you need |
-| --- | --- | --- |
-| Obsidian Local REST API MCP servers | A smaller, read-only tool surface for retrieval-only agents | Full note CRUD, active-file operations, templates, or frontmatter editing |
-| Smart Connections | MCP access without relying on Obsidian UI/plugin state | A polished in-Obsidian semantic search and related-notes experience |
-| Raw keyword search | Queries where wording differs from the note text | Exact grep-like matching only |
-| Qdrant/LanceDB-style stacks | Simple local install with one SQLite file | Large-scale vector indexing over very large vaults |
+Here's how it stacks up against the two tools it usually comes down to — a full-permission Obsidian MCP server (Local REST API based) and GBrain (a broader knowledge-compilation platform):
+
+| | **This project** | **Full-permission Obsidian MCP** | **GBrain** |
+| --- | --- | --- | --- |
+| Access model | Read-only: search / read / index | Read + write + edit + delete | Read + write; compiles notes into its own model |
+| Touches your vault | Never | Yes | Yes — restructures content |
+| Obsidian must run | No — reads files directly | Yes — needs the REST API plugin | No |
+| Extra runtime | None | Obsidian + plugin | Standalone platform |
+| Embeddings & data | Local Ollama; nothing leaves the machine | Local API; embeddings vary by setup | Built-in pipeline; optional sync |
+| Storage | One SQLite file you can delete and rebuild | Plugin-managed | Its own store / migration |
+| Best for | A small read-only retrieval boundary for agents | Full vault automation and editing | Building a compiled knowledge base across sources |
+
+That trade is on purpose: give up writing, editing, and running inside Obsidian, and you get fewer moving parts and a smaller blast radius in return.
 
 Use this if your agent should answer:
 
@@ -233,26 +269,38 @@ The vault remains the source of truth. The SQLite database is a derived index an
 
 ## Safety Model
 
-Default exclusions:
+The server reads your vault and never writes to it. Three layers decide what an agent can see.
 
-- `.obsidian/**`
-- `.smart-env/**`
-- `.claude/**`
-- `.codex*/**`
-- `08_PersonalInfo/**`
-- hidden folders
+**1. Always denied (system / tooling).** Never indexed, no override:
+
+- `.obsidian/`, `.smart-env/`, `.claude/`, `.codex-*/`
+- any hidden folder (name starts with `.`)
 - `node_modules`, `cache`, `logs`
+
+**2. Sensitive — denied by default, unlockable.** Stays blocked even when a tool call passes `include_sensitive: true`, unless the server is started with `OBSIDIAN_SEMANTIC_ALLOW_SENSITIVE=true`. Defaults to `08_PersonalInfo/`. Override the list with `OBSIDIAN_SEMANTIC_SENSITIVE_PATHS` (comma- or newline-separated folders):
+
+```toml
+OBSIDIAN_SEMANTIC_SENSITIVE_PATHS = "08_PersonalInfo, 09_Finance"
+```
+
+**3. Your own excludes — always denied.** Folders you never want indexed, searched, or read. No unlock flag:
+
+```toml
+OBSIDIAN_SEMANTIC_EXCLUDE = "03_Journal, Private, Clients/Acme"
+```
+
+Which one do you want?
+
+- **"Don't index this at all"** → `OBSIDIAN_SEMANTIC_EXCLUDE`
+- **"Keep it locked, but I can unlock it with a flag when I need to"** → `OBSIDIAN_SEMANTIC_SENSITIVE_PATHS` + `OBSIDIAN_SEMANTIC_ALLOW_SENSITIVE`
 
 Additional guards:
 
 - All paths are resolved through `realpath`.
 - Path traversal and URL-encoded traversal are blocked.
 - Symlinks that escape the vault root are blocked.
-- Sensitive paths stay blocked even when a tool call passes `include_sensitive: true`, unless the server is started with:
 
-```toml
-OBSIDIAN_SEMANTIC_ALLOW_SENSITIVE = "true"
-```
+> **Changing these lists only affects new indexing.** Already-indexed notes keep their stored state until you reindex. After tightening `EXCLUDE` or `SENSITIVE`, run `index_vault { "mode": "full" }` so `search_notes` cannot surface stale hits. (`read_note` always enforces the live config.) You can confirm the active lists with `index_status`.
 
 The local index stores snippets and embedding vectors. Treat it as a derived copy of your vault. See [PRIVACY.md](./PRIVACY.md).
 

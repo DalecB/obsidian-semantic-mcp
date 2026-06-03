@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_ARCHIVE_PATTERNS } from './config.mjs';
+import { DEFAULT_ARCHIVE_PATTERNS, DEFAULT_SENSITIVE_PREFIXES } from './config.mjs';
 import { assertMarkdownPath, createPathGuard, isDeniedRelativePath, normalizeRelPath } from './fsSafety.mjs';
 import { chunkMarkdown, sha256 } from './markdown.mjs';
 import { setMeta } from './database.mjs';
@@ -34,12 +34,13 @@ export async function scanMarkdownFiles(vaultRoot, options = {}) {
   return out.sort();
 }
 
-export async function indexVault({ db, vaultRoot, embeddingClient, mode = 'incremental', dryRun = false, paths = null, includeSensitive = false }) {
+export async function indexVault({ db, vaultRoot, embeddingClient, mode = 'incremental', dryRun = false, paths = null, includeSensitive = false, excludePaths = [], sensitivePaths = DEFAULT_SENSITIVE_PREFIXES }) {
   const guard = createPathGuard(vaultRoot);
+  const access = { includeSensitive, excludePaths, sensitivePaths };
   const now = Date.now();
   const candidatePaths = paths?.length
-    ? paths.map((p) => resolveRequestedPath(p, { includeSensitive }))
-    : await scanMarkdownFiles(vaultRoot, { includeSensitive });
+    ? paths.map((p) => resolveRequestedPath(p, access))
+    : await scanMarkdownFiles(vaultRoot, access);
   const seen = new Set(candidatePaths);
   const counts = { indexed: 0, updated: 0, skipped: 0, deleted: 0, failed: 0, dryRun: Boolean(dryRun) };
 
@@ -65,7 +66,7 @@ export async function indexVault({ db, vaultRoot, embeddingClient, mode = 'incre
         }
         continue;
       }
-      const { absPath } = guard.resolveVaultPath(relPath, { includeSensitive });
+      const { absPath } = guard.resolveVaultPath(relPath, access);
       const stat = fs.statSync(absPath);
       const raw = fs.readFileSync(absPath, 'utf8');
       const hash = sha256(raw);
@@ -88,7 +89,7 @@ export async function indexVault({ db, vaultRoot, embeddingClient, mode = 'incre
         embeddings,
         updatedAt: now,
         archived: isArchived(relPath),
-        sensitive: relPath.startsWith('08_PersonalInfo/'),
+        sensitive: sensitivePaths.some((prefix) => relPath.startsWith(prefix)),
       });
       previous ? counts.updated += 1 : counts.indexed += 1;
     } catch (error) {

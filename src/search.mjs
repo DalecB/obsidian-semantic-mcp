@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { createPathGuard } from './fsSafety.mjs';
+import { DEFAULT_DENY_PREFIXES } from './config.mjs';
 
 export async function searchNotes({ db, embeddingClient, query, limit = 8, mode = 'hybrid', folder_include, folder_exclude, include_archived = false, include_sensitive = false }) {
   if (!query || typeof query !== 'string') throw new Error('query is required');
@@ -67,9 +68,9 @@ export async function searchNotes({ db, embeddingClient, query, limit = 8, mode 
     .slice(0, boundedLimit);
 }
 
-export function readNote({ vaultRoot, path: relPath, start_line, end_line, include_sensitive = false }) {
+export function readNote({ vaultRoot, path: relPath, start_line, end_line, include_sensitive = false, excludePaths = [], sensitivePaths }) {
   const guard = createPathGuard(vaultRoot);
-  const { absPath, relPath: clean } = guard.resolveVaultPath(relPath, { includeSensitive: include_sensitive });
+  const { absPath, relPath: clean } = guard.resolveVaultPath(relPath, { includeSensitive: include_sensitive, excludePaths, sensitivePaths });
   const raw = fs.readFileSync(absPath, 'utf8');
   const lines = raw.split(/\r?\n/);
   const start = start_line ? Math.max(1, Number(start_line)) : 1;
@@ -101,7 +102,9 @@ export function indexStatus(db, config) {
     read_only: true,
     startup_index: config.startupIndex,
     sensitive_access_enabled: config.allowSensitive,
-    denied_defaults: ['.obsidian/**', '.smart-env/**', '.claude/**', '.codex*/**', '08_PersonalInfo/**'],
+    system_denied: DEFAULT_DENY_PREFIXES,
+    excluded_paths: config.excludePaths,
+    sensitive_paths: config.sensitivePaths,
   };
 }
 
