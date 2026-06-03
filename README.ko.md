@@ -32,36 +32,11 @@ local Obsidian vault -> read-only scanner -> local SQLite index -> MCP search/re
 
 노트 수정 없음. 클라우드 임베딩 없음. Obsidian plugin runtime 없음. 동기화 서비스 없음.
 
-```mermaid
----
-config:
-  look: handDrawn
-  theme: base
-  themeVariables:
-    fontFamily: "Comic Sans MS, Comic Sans, Chalkboard, cursive"
-    primaryColor: "#ffe8a3"
-    primaryBorderColor: "#e08a00"
-    primaryTextColor: "#3a2f00"
-    lineColor: "#e08a00"
-    secondaryColor: "#cdeffd"
-    tertiaryColor: "#ffd6e0"
----
-flowchart LR
-    subgraph Local["내 컴퓨터 — 아무것도 밖으로 나가지 않음"]
-        V[("Obsidian Vault<br>Markdown")]
-        S["읽기 전용 스캐너<br>deny-list + symlink guard"]
-        C["청킹<br>heading + summary"]
-        O["Ollama bge-m3<br>로컬 임베딩"]
-        DB[("SQLite 인덱스<br>vector + FTS5")]
-        V -->|scan| S --> C --> O --> DB
-    end
-    Agent["MCP client<br>Claude · Codex · Cursor"]
-    Agent -->|search_notes| DB
-    Agent -->|read_note| V
-    DB -->|"파일 단위 결과<br>heading · lines · snippet"| Agent
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/DalecB/obsidian-semantic-mcp/main/docs/architecture.ko.png" alt="로컬·읽기 전용 파이프라인: Obsidian Vault에서 스캐너, 청킹, Ollama 임베딩, SQLite 인덱스로 이어지고 MCP client가 search_notes/read_note로 질의" width="100%">
+</p>
 
-> 상태: `0.2.0` early preview입니다. 지금 사용할 수 있지만, `1.0` 전까지 ranking과 tool schema는 바뀔 수 있습니다.
+> 상태: `0.2.1` early preview입니다. 지금 사용할 수 있지만, `1.0` 전까지 ranking과 tool schema는 바뀔 수 있습니다.
 
 ## 무엇을 해주는가
 

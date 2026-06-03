@@ -1,6 +1,6 @@
 {
   "name": "@dalecb/obsidian-semantic-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Read-only semantic search MCP server for Obsidian vaults using local Ollama embeddings.",
   "type": "module",
   "license": "MIT",
@@ -32,6 +32,7 @@
     "src/",
     "scripts/",
     "docs/",
+    "!docs/*.png",
     "README.md",
     "README.ko.md",
     "LICENSE",

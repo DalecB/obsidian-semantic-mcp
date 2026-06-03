@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Render the architecture diagram as a static hand-drawn image so it displays on npm (Mermaid code blocks only render on GitHub).
+
 ## 0.2.0
 
 - Add `OBSIDIAN_SEMANTIC_EXCLUDE` to let users always exclude their own folders from indexing, search, and read.

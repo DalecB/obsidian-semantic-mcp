@@ -32,36 +32,11 @@ local Obsidian vault -> read-only scanner -> local SQLite index -> MCP search/re
 
 No note writes. No cloud embeddings. No Obsidian plugin runtime. No sync service.
 
-```mermaid
----
-config:
-  look: handDrawn
-  theme: base
-  themeVariables:
-    fontFamily: "Comic Sans MS, Comic Sans, Chalkboard, cursive"
-    primaryColor: "#ffe8a3"
-    primaryBorderColor: "#e08a00"
-    primaryTextColor: "#3a2f00"
-    lineColor: "#e08a00"
-    secondaryColor: "#cdeffd"
-    tertiaryColor: "#ffd6e0"
----
-flowchart LR
-    subgraph Local["Your machine — nothing leaves it"]
-        V[("Obsidian vault<br>Markdown")]
-        S["Read-only scanner<br>deny-list + symlink guard"]
-        C["Chunker<br>headings + summary"]
-        O["Ollama bge-m3<br>local embeddings"]
-        DB[("SQLite index<br>vectors + FTS5")]
-        V -->|scan| S --> C --> O --> DB
-    end
-    Agent["MCP client<br>Claude · Codex · Cursor"]
-    Agent -->|search_notes| DB
-    Agent -->|read_note| V
-    DB -->|"file-level matches<br>heading · lines · snippet"| Agent
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/DalecB/obsidian-semantic-mcp/main/docs/architecture.png" alt="Local, read-only pipeline: Obsidian vault to scanner to chunker to Ollama embeddings to SQLite index, queried by an MCP client via search_notes and read_note" width="100%">
+</p>
 
-> Status: `0.2.0` early preview. The server is usable today, but ranking behavior and tool schemas may change before `1.0`.
+> Status: `0.2.1` early preview. The server is usable today, but ranking behavior and tool schemas may change before `1.0`.
 
 ## What You Get
 

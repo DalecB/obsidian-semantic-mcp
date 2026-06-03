@@ -118,7 +118,7 @@ async function handleRequest(request, context) {
       return {
         protocolVersion: request.params?.protocolVersion || '2024-11-05',
         capabilities: { tools: {} },
-        serverInfo: { name: 'obsidian-semantic-mcp', version: '0.2.0' },
+        serverInfo: { name: 'obsidian-semantic-mcp', version: '0.2.1' },
       };
     case 'tools/list':
       return { tools: TOOLS };
